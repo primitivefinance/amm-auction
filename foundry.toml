@@ -5,15 +5,7 @@ out = 'artifacts/contracts'
 libs = ['lib', 'node_modules']
 test = 'test/foundry'
 cache_path = 'forge-cache'
-remappings = [
-    'ds-test/=lib/solmate/lib/ds-test/src/',
-    'forge-std/=lib/forge-std/src/',
-    'solmate/=lib/solmate/src/',
-    'solstat/=lib/solstat/contracts/',
-    'contracts/=contracts/',
-    'lib/=lib/'
-]
-optimizer_runs = 15000
+optimizer_runs = 15
 fuzz_runs = 256
 fuzz_max_local_rejects = 65536
 fuzz_max_global_rejects = 1024
