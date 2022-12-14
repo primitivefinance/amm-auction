@@ -22,6 +22,7 @@ contract TestBrainMath is Test {
 
     function test_getSqrtPriceAtSlot_min() public {
         UD60x18 sqrtPrice = getSqrtPriceAtSlot(MIN_SLOT_INDEX);
+        emit log_uint(unwrap(sqrtPrice));
         assertEq(unwrap(sqrtPrice), unwrap(MIN_SQRT_PRICE));
     }
 
