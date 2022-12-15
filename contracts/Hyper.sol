@@ -18,10 +18,6 @@ import {getPoolId, getPoolSnapshot, PoolId, Pool, PoolToken, PoolSnapshot, Bid} 
 import {getSlotId, getSlotSnapshot, SlotId, Slot, SlotSnapshot} from "./libraries/Slot.sol";
 import {getPositionId, getPerLiquiditiesInside, getEarnings, PerLiquiditiesInside, Earnings, PositionId, Position} from "./libraries/Position.sol";
 
-// TODO:
-// - check the types on integers
-// - fix amount out
-
 contract Hyper is IHyper, ReentrancyGuard, Test {
     address public immutable AUCTION_SETTLEMENT_TOKEN;
     uint256 public immutable AUCTION_LENGTH;
@@ -30,6 +26,7 @@ contract Hyper is IHyper, ReentrancyGuard, Test {
     UD60x18 public immutable AUCTION_FEE;
 
     uint8 public immutable SLOT_SPACING;
+    uint256 public immutable MAX_LIQUIDITY_GROSS;
 
     Epoch public epoch;
 
@@ -77,6 +74,7 @@ contract Hyper is IHyper, ReentrancyGuard, Test {
 
         require(_slotSpacing > 0);
         SLOT_SPACING = _slotSpacing;
+        MAX_LIQUIDITY_GROSS = BrainMath.getMaxLiquidityGross(SLOT_SPACING);
     }
 
     modifier started() {
@@ -442,8 +440,9 @@ contract Hyper is IHyper, ReentrancyGuard, Test {
                     lowerSlot.feesAPerLiquidityOutside = pool.feesAPerLiquidity;
                     lowerSlot.feesBPerLiquidityOutside = pool.feesBPerLiquidity;
                 }
-                lowerSlot.liquidityGross += uint256(addAmountLeft);
             }
+            lowerSlot.liquidityGross += uint256(addAmountLeft);
+            if (lowerSlot.liquidityGross > MAX_LIQUIDITY_GROSS) revert();
 
             upperSlot.swapLiquidityDelta -= int256(addAmountLeft);
             upperSlot.pendingLiquidityDelta -= int256(addAmountLeft);
@@ -457,8 +456,10 @@ contract Hyper is IHyper, ReentrancyGuard, Test {
                     upperSlot.feesAPerLiquidityOutside = pool.feesAPerLiquidity;
                     upperSlot.feesBPerLiquidityOutside = pool.feesBPerLiquidity;
                 }
-                upperSlot.liquidityGross += uint256(addAmountLeft);
             }
+            upperSlot.liquidityGross += uint256(addAmountLeft);
+            if (upperSlot.liquidityGross > MAX_LIQUIDITY_GROSS) revert();
+
             (amountA, amountB) = BrainMath.calculateLiquidityUnderlying(
                 addAmountLeft,
                 pool.sqrtPrice,

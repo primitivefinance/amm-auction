@@ -28,6 +28,15 @@ function abs_(int24 n) pure returns (uint24) {
     return uint24(n > 0 ? n : ~n + 1);
 }
 
+// @dev: needed to make sure the pool's liquidity can never exceed its max value (type(uint256).max)
+function getMaxLiquidityGross(uint8 slotSpacing) pure returns (uint256) {
+    int24 maxSlotIndex = ((MAX_SLOT_INDEX / int8(slotSpacing)) * int8(slotSpacing));
+    int24 minSlotIndex = ((MIN_SLOT_INDEX / int8(slotSpacing)) * int8(slotSpacing));
+    int24 minMaxDistance = maxSlotIndex - minSlotIndex;
+    uint24 totalPossibleSlots = (uint24(minMaxDistance) / slotSpacing) + 1;
+    return type(uint256).max / totalPossibleSlots;
+}
+
 /// @dev Get the price square root using the slot index
 ///      $$\sqrt_p(i)=sqrt(1.0001)^{i}$$
 function getSqrtPriceAtSlot(int24 slotIndex) pure returns (UD60x18 sqrtPrice) {
